@@ -1,3 +1,6 @@
+from typing import Callable
+from django.http import HttpRequest, HttpResponse
+
 class APIVersioningMiddleware:
     """
     Middleware to handle API versioning based on request headers.
@@ -6,7 +9,7 @@ class APIVersioningMiddleware:
     and attaches it to the request object. If the header is not present, it defaults to 'v1'.
     """
     
-    def __init__(self, get_response):
+    def __init__(self, get_response: Callable[[HttpRequest], HttpResponse]) -> None:
         """
         Initialize the middleware with the given get_response callable.
         
@@ -15,9 +18,9 @@ class APIVersioningMiddleware:
         get_response : callable
             The next middleware or view in the chain.
         """
-        self.get_response = get_response
+        self.get_response: Callable[[HttpRequest], HttpResponse] = get_response
 
-    def __call__(self, request):
+    def __call__(self, request: HttpRequest) -> HttpResponse:
         """
         Handle the incoming request and attach the API version to the request object.
         
@@ -32,9 +35,9 @@ class APIVersioningMiddleware:
             The HTTP response from the next middleware or view.
         """
         # Extract the API version from the 'HTTP_API_VERSION' header, default to 'v1' if not present
-        version = request.META.get('HTTP_API_VERSION', 'v1')
+        version: str = request.META.get('HTTP_API_VERSION', 'v1')
         # Attach the version to the request object
         request.version = version
         # Get the response from the next middleware or view
-        response = self.get_response(request)
+        response: HttpResponse = self.get_response(request)
         return response
